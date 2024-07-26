@@ -1,0 +1,37 @@
+import itertools
+
+def solve_cryptarithmetic():
+    # Define letters and their positions
+    letters = 'SENDMORY'
+    # Generate all possible digit mappings
+    for perm in itertools.permutations(range(10), len(letters)):
+        mapping = dict(zip(letters, perm))
+        
+        # Extract values for each word
+        s = mapping['S']
+        e = mapping['E']
+        n = mapping['N']
+        d = mapping['D']
+        m = mapping['M']
+        o = mapping['O']
+        r = mapping['R']
+        y = mapping['Y']
+        
+        # Leading digit cannot be zero
+        if s == 0 or m == 0:
+            continue
+        
+        # Calculate the numerical values
+        send = s * 1000 + e * 100 + n * 10 + d
+        more = m * 1000 + o * 100 + r * 10 + e
+        money = m * 10000 + o * 1000 + n * 100 + e * 10 + y
+        
+        # Check if the equation is satisfied
+        if send + more == money:
+            print(f"SEND: {send}")
+            print(f"MORE: {more}")
+            print(f"MONEY: {money}")
+            print(f"Mapping: {mapping}")
+            return mapping
+
+solve_cryptarithmetic()
