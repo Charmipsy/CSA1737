@@ -1,0 +1,19 @@
+def minimax(curDepth, nodeIndex, maxTurn, scores):
+    # Base case: if curDepth exceeds the length of scores, return 0
+    if curDepth >= len(scores):
+        return 0
+    
+    # Base case: if nodeIndex exceeds the length of scores, return 0
+    if nodeIndex >= len(scores):
+        return 0
+
+    if maxTurn:
+        return max(minimax(curDepth + 1, nodeIndex * 2, False, scores),
+                   minimax(curDepth + 1, nodeIndex * 2 + 1, False, scores))
+    else:
+        return min(minimax(curDepth + 1, nodeIndex * 2, True, scores),
+                   minimax(curDepth + 1, nodeIndex * 2 + 1, True, scores))
+
+
+scores = [3, 5, 2, 9, 12, 5, 23, 27]
+print("The optimal value is:", minimax(0, 0, True, scores))
