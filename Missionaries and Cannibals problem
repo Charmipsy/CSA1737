@@ -1,0 +1,70 @@
+from collections import deque
+
+def is_valid(state):
+    m1, c1, m2, c2, boat = state
+    if m1 < 0 or c1 < 0 or m2 < 0 or c2 < 0:
+        return False
+    if m1 > 3 or c1 > 3 or m2 > 3 or c2 > 3:
+        return False
+    if (m1 > 0 and m1 < c1) or (m2 > 0 and m2 < c2):
+        return False
+    return True
+
+def get_successors(state):
+    m1, c1, m2, c2, boat = state
+    successors = []
+    if boat == 1:  # boat on the starting side
+        moves = [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]
+        for m, c in moves:
+            new_state = (m1 - m, c1 - c, m2 + m, c2 + c, 0)
+            if is_valid(new_state):
+                successors.append(new_state)
+    else:  # boat on the other side
+        moves = [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]
+        for m, c in moves:
+            new_state = (m1 + m, c1 + c, m2 - m, c2 - c, 1)
+            if is_valid(new_state):
+                successors.append(new_state)
+    return successors
+
+def bfs(start_state, goal_state):
+    queue = deque([start_state])
+    parent_map = {start_state: None}
+    path = []
+
+    while queue:
+        current_state = queue.popleft()
+        if current_state == goal_state:
+            while current_state:
+                path.append(current_state)
+                current_state = parent_map[current_state]
+            path.reverse()
+            return path
+
+        for successor in get_successors(current_state):
+            if successor not in parent_map:
+                queue.append(successor)
+                parent_map[successor] = current_state
+
+    return None
+
+def print_solution(path):
+    for step in path:
+        m1, c1, m2, c2, boat = step
+        print(f"Left: M{m1} C{c1} | Right: M{m2} C{c2} | Boat on {'Left' if boat == 1 else 'Right'} side")
+
+def main():
+    start_state = (3, 3, 0, 0, 1)  # (M_left, C_left, M_right, C_right, Boat_side)
+    goal_state = (0, 0, 3, 3, 0)   # (M_left, C_left, M_right, C_right, Boat_side)
+
+    print("Starting BFS to solve Missionaries and Cannibals problem...\n")
+    solution_path = bfs(start_state, goal_state)
+
+    if solution_path:
+        print("Solution found:")
+        print_solution(solution_path)
+    else:
+        print("No solution found.")
+
+if __name__ == '__main__':
+    main()
