@@ -1,0 +1,88 @@
+import numpy as np
+
+class Node:
+    def __init__(self, attribute=None, threshold=None, left=None, right=None, value=None):
+        self.attribute = attribute    # Attribute to split on
+        self.threshold = threshold    # Threshold value for numerical attributes
+        self.left = left              # Left subtree
+        self.right = right            # Right subtree
+        self.value = value            # Class label (for leaf nodes)
+
+def entropy(y):
+    """ Calculate entropy of a list of class labels """
+    classes, counts = np.unique(y, return_counts=True)
+    probabilities = counts / len(y)
+    entropy = -np.sum(probabilities * np.log2(probabilities))
+    return entropy
+
+def information_gain(X, y, attribute, threshold):
+    """ Calculate information gain based on splitting criterion """
+    left_indices = X[:, attribute] <= threshold
+    right_indices = X[:, attribute] > threshold
+    left_y, right_y = y[left_indices], y[right_indices]
+    parent_entropy = entropy(y)
+    left_entropy = entropy(left_y)
+    right_entropy = entropy(right_y)
+    n = len(y)
+    child_entropy = (len(left_y) / n) * left_entropy + (len(right_y) / n) * right_entropy
+    gain = parent_entropy - child_entropy
+    return gain
+
+def find_best_split(X, y):
+    """ Find the best attribute and threshold to split on """
+    best_attribute = None
+    best_threshold = None
+    max_gain = -float('inf')
+    for attribute in range(X.shape[1]):
+        thresholds = np.unique(X[:, attribute])
+        for threshold in thresholds:
+            gain = information_gain(X, y, attribute, threshold)
+            if gain > max_gain:
+                max_gain = gain
+                best_attribute = attribute
+                best_threshold = threshold
+    return best_attribute, best_threshold
+
+def build_decision_tree(X, y, depth=0, max_depth=None):
+    """ Build decision tree recursively """
+    if max_depth is not None and depth == max_depth:
+        return Node(value=np.bincount(y).argmax())
+
+    best_attribute, best_threshold = find_best_split(X, y)
+    if best_attribute is None or best_threshold is None:
+        return Node(value=np.bincount(y).argmax())
+
+    left_indices = X[:, best_attribute] <= best_threshold
+    right_indices = X[:, best_attribute] > best_threshold
+
+    left_subtree = build_decision_tree(X[left_indices], y[left_indices], depth + 1, max_depth)
+    right_subtree = build_decision_tree(X[right_indices], y[right_indices], depth + 1, max_depth)
+
+    return Node(attribute=best_attribute, threshold=best_threshold, left=left_subtree, right=right_subtree)
+
+def print_tree(node, depth=0):
+    """ Print the decision tree structure """
+    if node.value is not None:
+        print(depth * " ", "Predict:", node.value)
+    else:
+        print(depth * " ", "Attribute:", node.attribute, "Threshold:", node.threshold)
+        print_tree(node.left, depth + 1)
+        print_tree(node.right, depth + 1)
+
+if __name__ == "__main__":
+    # Sample dataset
+    X = np.array([
+        [2.5, 7],
+        [3.5, 4],
+        [4.5, 6],
+        [5.5, 1],
+        [6.5, 5]
+    ])
+    y = np.array([0, 0, 1, 1, 1])  # Class labels (0 and 1)
+
+    # Build decision tree
+    tree = build_decision_tree(X, y, max_depth=2)
+
+    # Print decision tree
+    print("Decision Tree Structure:")
+    print_tree(tree)
